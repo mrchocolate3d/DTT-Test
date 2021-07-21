@@ -10,10 +10,10 @@ defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 return new \Phalcon\Config([
     'database' => [
         'adapter'     => 'Mysql',
-        'host'        => 'den1.mssql7.gear.host',
-        'username'    => 'seyifunmigandonu',
-        'password'    => 'Vx0i_?4ROQzT',
-        'dbname'      => 'seyifunmigandonu',
+        'host'        => 'sql11.freesqldatabase.com',
+        'username'    => 'sql11426251',
+        'password'    => 'MfA2cVw3fn',
+        'dbname'      => 'sql11426251',
         'charset'     => 'utf8',
     ],
     'application' => [
