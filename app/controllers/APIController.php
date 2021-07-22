@@ -32,7 +32,6 @@ class APIController extends \Phalcon\Mvc\Controller
 
             $houses  = Houses::find();
 
-
             if ($houses) {
                 // Use Model for database Query
                 $returnData = array();
@@ -45,9 +44,11 @@ class APIController extends \Phalcon\Mvc\Controller
                         'addition' => $house->addition,
                         'zipCode' => $house->zipCode,
                         'city' => $house->city,
-                         'rooms' => Rooms::find([
-                             "houseID = '$house->id'"
-                         ])
+                         'rooms' => Rooms::find(array(
+                             "bind" => ["id" => $house->id ],
+                             'conditions' => 'houseID = :id:',
+                             'columns' => 'width, length, height'
+                         ))
                     );
                 }
                 // Set status code
@@ -80,6 +81,67 @@ class APIController extends \Phalcon\Mvc\Controller
     }
 
 
+    /**
+     * @method POST
+     * @link /apis/get
+     */
+    public function sawAction()
+    {
+        $this->view->disable();
 
+
+        $response = new Response();
+
+        // Getting a request instance
+        $request = new Request();
+
+        if ($request->isPost()) {
+            $house = new Houses();
+
+            $house->street =  $this->request->getPut("street");
+            $house->number =  $this->request->getPut("number");
+            $house->addition =  $this->request->getPut("addition");
+            $house->zipCode =  $this->request->getPut("zipCode");
+            $house->city =  $this->request->getPut("city");
+            $house->save();
+            $rooms = $this->request->getPut("rooms");
+
+            $RoomHouse = Houses::findFirst(
+                [
+                    'columns'    => '*',
+                    'conditions' => 'street = ?1 AND number = ?2',
+                    'bind'       => [
+                        1 => $house->street,
+                        2 => $house->number,
+                    ]
+                ]
+            );
+
+            foreach ($rooms as $room){
+                $roomDB = new Rooms();
+                $roomDB->width = $room['width'];
+                $roomDB->length = $room['length'];
+                $roomDB->height = $room['height'];
+                $roomDB->typeID = $room['type'];
+                $roomDB->houseID = $RoomHouse->id;
+                $roomDB->save();
+
+            }
+
+            $response->setStatusCode(200, 'OK');
+
+            // Set the content of the response
+            $response->setJsonContent(["Status" => "Success", "House" => $house, "Rooms" => $rooms ]);
+
+        } else {
+
+            // Set status code
+            $response->setStatusCode(400, 'Bad Request');
+
+            // Set the content of the response
+            $response->setJsonContent(["status" => false, "error" => "Invalid Email and Password."]);
+        }
+        $response->send();
+    }
 }
 
