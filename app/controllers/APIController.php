@@ -2,6 +2,10 @@
 declare(strict_types=1);
 use Phalcon\Http\Response;
 use Phalcon\Http\Request;
+use Phalcon\Mvc\Model\Query;
+use Phalcon\Mvc\Model\Manager;
+
+
 
 class APIController extends \Phalcon\Mvc\Controller
 {
@@ -18,49 +22,39 @@ class APIController extends \Phalcon\Mvc\Controller
         $this->view->disable();
 
         // Getting a response instance
-        // https://docs.phalcon.io/3.4/en/response.html
         $response = new Response();
 
         // Getting a request instance
-        // https://docs.phalcon.io/3.4/en/request
         $request = new Request();
 
         // Check whether the request was made with method GET ( $this->request->isGet() )
         if ($request->isGet()) {
-            $name = $request->getPost("name");
-            $password = $request->getPost("password");
 
-            $phql = "SELECT * FROM users ORDER BY name";
-            $user  = Users::find([
-                'order' => 'name'
-            ]);
+            $houses  = Houses::find();
 
-            /* Check user exist in database table
-            $user = Users::findFirst([
-                'conditions' => 'name = ?1 AND password = ?2',
-                'bind' => [
-                    1 => $name,
-                    2 => $password,
-                ]
-            ]);*/
 
-            if ($user) {
-
+            if ($houses) {
                 // Use Model for database Query
                 $returnData = array();
-                foreach ($user as $robot) {
+
+                foreach ($houses as $house) {
                     $returnData[] = array(
-                        'id'   => $robot->id,
-                        'name' => $robot->name
+                        'id'   => $house->id,
+                        'street' => $house->street,
+                        'number' => $house->number,
+                        'addition' => $house->addition,
+                        'zipCode' => $house->zipCode,
+                        'city' => $house->city,
+                         'rooms' => Rooms::find([
+                             "houseID = '$house->id'"
+                         ])
                     );
                 }
-                //echo json_encode($returnData);
-
                 // Set status code
                 $response->setStatusCode(200, 'OK');
 
                 // Set the content of the response
-                $response->setJsonContent(["status" => true, "error" => false, "message" => "Login Successful. :)", "data" => $returnData ]);
+                $response->setJsonContent(["House" => $returnData ]);
 
             } else {
 
@@ -68,7 +62,7 @@ class APIController extends \Phalcon\Mvc\Controller
                 $response->setStatusCode(400, 'Bad Request');
 
                 // Set the content of the response
-                $response->setJsonContent(["status" => false, "error" => "Invalid Email and Password."]);
+                $response->setJsonContent(["status" => false, "error" => "Cannot get data from database"]);
             }
 
         } else {
@@ -84,6 +78,8 @@ class APIController extends \Phalcon\Mvc\Controller
         // Send response to the client
         $response->send();
     }
+
+
 
 }
 

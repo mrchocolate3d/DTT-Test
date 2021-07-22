@@ -1,6 +1,6 @@
 <?php
 
-class Users extends \Phalcon\Mvc\Model
+class UserRole extends \Phalcon\Mvc\Model
 {
 
     /**
@@ -14,18 +14,6 @@ class Users extends \Phalcon\Mvc\Model
      * @var string
      */
     protected $name;
-
-    /**
-     *
-     * @var string
-     */
-    protected $password;
-
-    /**
-     *
-     * @var integer
-     */
-    protected $roleID;
 
     /**
      * Method to set the value of field id
@@ -54,32 +42,6 @@ class Users extends \Phalcon\Mvc\Model
     }
 
     /**
-     * Method to set the value of field password
-     *
-     * @param string $password
-     * @return $this
-     */
-    public function setPassword($password)
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    /**
-     * Method to set the value of field roleID
-     *
-     * @param integer $roleID
-     * @return $this
-     */
-    public function setRoleID($roleID)
-    {
-        $this->roleID = $roleID;
-
-        return $this;
-    }
-
-    /**
      * Returns the value of field id
      *
      * @return integer
@@ -100,40 +62,20 @@ class Users extends \Phalcon\Mvc\Model
     }
 
     /**
-     * Returns the value of field password
-     *
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-    /**
-     * Returns the value of field roleID
-     *
-     * @return integer
-     */
-    public function getRoleID()
-    {
-        return $this->roleID;
-    }
-
-    /**
      * Initialize method for model.
      */
     public function initialize()
     {
         $this->setSchema("sql11426251");
-        $this->setSource("users");
-        $this->belongsTo('roleID', '\UserRole', 'id', ['alias' => 'Userrole']);
+        $this->setSource("userRole");
+        $this->hasMany('id', 'Users', 'roleID', ['alias' => 'Users']);
     }
 
     /**
      * Allows to query a set of records that match the specified conditions
      *
      * @param mixed $parameters
-     * @return Users[]|Users|\Phalcon\Mvc\Model\ResultSetInterface
+     * @return UserRole[]|UserRole|\Phalcon\Mvc\Model\ResultSetInterface
      */
     public static function find($parameters = null): \Phalcon\Mvc\Model\ResultsetInterface
     {
@@ -144,7 +86,7 @@ class Users extends \Phalcon\Mvc\Model
      * Allows to query the first record that match the specified conditions
      *
      * @param mixed $parameters
-     * @return Users|\Phalcon\Mvc\Model\ResultInterface|\Phalcon\Mvc\ModelInterface|null
+     * @return UserRole|\Phalcon\Mvc\Model\ResultInterface|\Phalcon\Mvc\ModelInterface|null
      */
     public static function findFirst($parameters = null): ?\Phalcon\Mvc\ModelInterface
     {
@@ -161,9 +103,7 @@ class Users extends \Phalcon\Mvc\Model
     {
         return [
             'id' => 'id',
-            'name' => 'name',
-            'password' => 'password',
-            'roleID' => 'roleID'
+            'name' => 'name'
         ];
     }
 
