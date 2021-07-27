@@ -4,7 +4,6 @@ use Phalcon\Http\Response;
 use Phalcon\Http\Request;
 use Phalcon\Mvc\Model\Query;
 use Phalcon\Mvc\Model\Manager;
-$_SERVER['HTTP_AUTHORIZATION'] = 'dsdJHdb8JKY6756fgU';
 
 
 
@@ -96,8 +95,6 @@ class APIController extends \Phalcon\Mvc\Controller
                     $response->setStatusCode(200, 'OK');
 
                 }
-
-
             // Set the content of the response
             $response->setJsonContent($returnData);
             }
@@ -173,12 +170,12 @@ class APIController extends \Phalcon\Mvc\Controller
                     $roomDB->save();
 
                 }
+                // Set the content of the response
+                $response->setJsonContent(["Status" => "Success", "House" => $house, "Rooms" => $rooms ]);
             }
 
             $response->setStatusCode(200, 'OK');
 
-            // Set the content of the response
-            $response->setJsonContent(["Status" => "Success", "House" => $house, "Rooms" => $rooms ]);
 
         } else {
 
@@ -218,7 +215,8 @@ class APIController extends \Phalcon\Mvc\Controller
                 $addition =  $this->request->getPut("addition");
                 $zipCode =  $this->request->getPut("zipCode");
                 $roomOrder = $this->request->getPut("roomOrder");
-                if ($this->request->getPut("addition") == null){
+
+                if ($this->request->getPut("addition") == null && $roomOrder !== 0){
                     $House = Houses::findFirst(
                         [
                             'columns'    => '*',
@@ -244,41 +242,48 @@ class APIController extends \Phalcon\Mvc\Controller
                         ]
                     );
                 }
-
-                if($House->userID == $user['userID'] || $user['roleID'] == 2){
-                    $Room = Rooms::find(
-                        [
-                            'columns'    => '*',
-                            'conditions' => 'houseID = ?1',
-                            'bind'       => [
-                                1 => $House->id,
+                if ($roomOrder > 0 ){
+                    if($House->userID == $user['userID'] || $user['roleID'] == 2){
+                        $Room = Rooms::find(
+                            [
+                                'columns'    => '*',
+                                'conditions' => 'houseID = ?1',
+                                'bind'       => [
+                                    1 => $House->id,
+                                ]
                             ]
-                        ]
-                    );
+                        );
 
-                    $RoomToDelete = new Rooms();
-                    $count = 1;
-                    foreach ($Room as $x){
-                        if($count == $roomOrder){
-                            $RoomToDelete = $x;
+                        $RoomToDelete = new Rooms();
+                        $count = 1;
+                        foreach ($Room as $x){
+                            if($count == $roomOrder){
+                                $RoomToDelete = $x;
+                            }
+                            $count++;
                         }
-                        $count++;
+                        $RoomToDelete->delete();
+                        // Set status code
+                        $response->setStatusCode(200, 'OK');
+
+                        // Set the content of the response
+                        $response->setJsonContent('Room has been deleted successfully');
                     }
-                    $RoomToDelete->delete();
+                } else if ($roomOrder == 0) {
+                    $House->delete();
                     // Set status code
                     $response->setStatusCode(200, 'OK');
 
                     // Set the content of the response
-                    $response->setJsonContent([$Room]);
+                    $response->setJsonContent('House has been removed from listing');
                 } else {
                     // Set status code
                     $response->setStatusCode(401, 'OK');
 
                     // Set the content of the response
-                    $response->setJsonContent('This is not your house');
+                    $response->setJsonContent('House was not deleted from the database please contact an administrator');
                 }
             }
-
         } else {
             // Set status code
             $response->setStatusCode(400, 'Bad Request');
@@ -286,8 +291,8 @@ class APIController extends \Phalcon\Mvc\Controller
             // Set the content of the response
             $response->setJsonContent(["status" => false, "error" => "Cannot get data from database"]);
         }
-        $response->send();
 
+        $response->send();
     }
 
     public function filterHousesAction(){
@@ -307,17 +312,17 @@ class APIController extends \Phalcon\Mvc\Controller
             $ToiletCount =  $this->request->getPut("minimalToiletCount");
             if($BedCount !== null && $ToiletCount == null && $search == null){
                 $results = $this->db->fetchAll(
-                    "select houseID,type, count(type) as c FROM rooms where type = 'bedroom' GROUP BY houseID, type HAVING count(type) >'$BedCount'"
+                    "select houseID,type, count(type) as c FROM rooms where type = 'bedroom' GROUP BY houseID, type HAVING count(type) >='$BedCount'"
                 );
                 $returnData = $this->getHousesFromFilter($results);
             } else if ($BedCount == null && $ToiletCount !== null && $search == null){
                 $results = $this->db->fetchAll(
-                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' GROUP BY houseID, type HAVING count(type) >'$ToiletCount'"
+                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' GROUP BY houseID, type HAVING count(type) >='$ToiletCount'"
                 );
                 $returnData = $this->getHousesFromFilter($results);
             } else if ($BedCount !== null && $ToiletCount !== null && $search == null){
                 $results = $this->db->fetchAll(
-                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' and type = 'bedroom' GROUP BY houseID, type HAVING count(type) >'$ToiletCount'"
+                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' and type = 'bedroom' GROUP BY houseID, type HAVING count(type) >='$ToiletCount'"
                 );
                 $returnData = $this->getHousesFromFilter($results);
             } else {
@@ -342,7 +347,8 @@ class APIController extends \Phalcon\Mvc\Controller
 
     }
 
-    public function getHousesFromFilter($results){
+    public function getHousesFromFilter($results): array
+    {
         $returnData = array();
         foreach ($results as $result){
             $house = Houses::findFirst(
