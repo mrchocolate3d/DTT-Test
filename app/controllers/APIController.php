@@ -272,21 +272,34 @@ class APIController extends \Phalcon\Mvc\Controller
         $request = new Request();
 
         if ($request->isGet()) {
+            $returnData = array();
             $search =  $this->request->getPut("search");
             $BedCount =  $this->request->getPut("minimalBedroomCount");
             $ToiletCount =  $this->request->getPut("minimalToiletCount");
-            $count = $this->db->fetchOne('select houseID,type, count(type) as total FROM rooms GROUP BY houseID, type HAVING count(type) >2');
+            if($BedCount !== null && $ToiletCount == null && $search == null){
+                $results = $this->db->fetchAll(
+                    "select houseID,type, count(type) as c FROM rooms where type = 'bedroom' GROUP BY houseID, type HAVING count(type) >'$BedCount'"
+                );
+                $returnData = $this->getHousesFromFilter($results);
+            } else if ($BedCount == null && $ToiletCount !== null && $search == null){
+                $results = $this->db->fetchAll(
+                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' GROUP BY houseID, type HAVING count(type) >'$ToiletCount'"
+                );
+                $returnData = $this->getHousesFromFilter($results);
+            } else if ($BedCount !== null && $ToiletCount !== null && $search == null){
+                $results = $this->db->fetchAll(
+                    "select houseID,type, count(type) as c FROM rooms where type = 'toilet' and type = 'bedroom' GROUP BY houseID, type HAVING count(type) >'$ToiletCount'"
+                );
+                $returnData = $this->getHousesFromFilter($results);
+            } else {
+                $returnData = 'All values are null enter a filter';
+            }
 
-            $houses  = Houses::count(
-                array(
-                        'column' => 'id',
-                )
-            );
             // Set status code
             $response->setStatusCode(200, 'OK');
 
             // Set the content of the response
-            $response->setJsonContent($count);
+            $response->setJsonContent($returnData);
 
         }  else {
 
@@ -296,9 +309,33 @@ class APIController extends \Phalcon\Mvc\Controller
             // Set the content of the response
             $response->setJsonContent(["status" => false, "error" => "Cannot get data from database"]);
         }
-
         $response->send();
 
+    }
+
+    public function getHousesFromFilter($results){
+        $returnData = array();
+        foreach ($results as $result){
+            $house = Houses::findFirst(
+                [
+                    "id = '$result[houseID]'"
+                ]
+            );
+            $returnData[] = array(
+                'id' => $house->id,
+                'street' => $house->street,
+                'number' => $house->number,
+                'addition' => $house->addition,
+                'zipCode' => $house->zipCode,
+                'city' => $house->city,
+                'rooms' => Rooms::find(array(
+                    "bind" => ["id" => $result['houseID']],
+                    'conditions' => 'houseID = :id:',
+                    'columns' => 'type, width, length, height'
+                ))
+            );
+        }
+        return $returnData;
     }
 
 
