@@ -30,6 +30,7 @@ class APIController extends \Phalcon\Mvc\Controller
 
         if ($user !== null){
             $auth = [
+                "userID" => $user->id,
                 "roleID"       => $user->roleID,
                 "username" => $user->name
             ];
@@ -131,37 +132,47 @@ class APIController extends \Phalcon\Mvc\Controller
         $request = new Request();
 
         if ($request->isPost()) {
-            $house = new Houses();
+            $user = $this->Auth();
 
-            $house->street =  $this->request->getPut("street");
-            $house->number =  $this->request->getPut("number");
-            $house->addition =  $this->request->getPut("addition");
-            $house->zipCode =  $this->request->getPut("zipCode");
-            $house->city =  $this->request->getPut("city");
-            $house->save();
-            $rooms = $this->request->getPut("rooms");
+            if ($user == null) {
+                // Set status code
+                $response->setStatusCode(400, 'Bad Request');
 
-            $RoomHouse = Houses::findFirst(
-                [
-                    'columns'    => '*',
-                    'conditions' => 'street = ?1 AND number = ?2',
-                    'bind'       => [
-                        1 => $house->street,
-                        2 => $house->number,
+                // Set the content of the response
+                $response->setJsonContent(["status" => false, "error" => "Cannot get data from database please check credentials"]);
+            } else if (true) {
+                $house = new Houses();
+
+                $house->street =  $this->request->getPut("street");
+                $house->number =  $this->request->getPut("number");
+                $house->addition =  $this->request->getPut("addition");
+                $house->zipCode =  $this->request->getPut("zipCode");
+                $house->city =  $this->request->getPut("city");
+                $house->userID =  $user['userID'];
+                $house->save();
+                $rooms = $this->request->getPut("rooms");
+
+                $RoomHouse = Houses::findFirst(
+                    [
+                        'columns'    => '*',
+                        'conditions' => 'street = ?1 AND number = ?2',
+                        'bind'       => [
+                            1 => $house->street,
+                            2 => $house->number,
+                        ]
                     ]
-                ]
-            );
+                );
 
-            foreach ($rooms as $room){
-                $roomDB = new Rooms();
-                $roomDB->width = $room['width'];
-                $roomDB->length = $room['length'];
-                $roomDB->height = $room['
-                '];
-                $roomDB->type = $room['type'];
-                $roomDB->houseID = $RoomHouse->id;
-                $roomDB->save();
+                foreach ($rooms as $room){
+                    $roomDB = new Rooms();
+                    $roomDB->width = $room['width'];
+                    $roomDB->length = $room['length'];
+                    $roomDB->height = $room['height'];
+                    $roomDB->type = $room['type'];
+                    $roomDB->houseID = $RoomHouse->id;
+                    $roomDB->save();
 
+                }
             }
 
             $response->setStatusCode(200, 'OK');
@@ -192,63 +203,82 @@ class APIController extends \Phalcon\Mvc\Controller
         $request = new Request();
 
         if ($request->isDelete()) {
-            $street =  $this->request->getPut("street");
-            $number =  $this->request->getPut("number");
-            $addition =  $this->request->getPut("addition");
-            $zipCode =  $this->request->getPut("zipCode");
-            $roomOrder = $this->request->getPut("roomOrder");
-            if ($this->request->getPut("addition") == null){
-                $House = Houses::findFirst(
-                    [
-                        'columns'    => '*',
-                        'conditions' => 'street = ?1 AND number = ?2 AND zipCode = ?4',
-                        'bind'       => [
-                            1 => $street,
-                            2 => $number,
-                            4 => $zipCode,
-                        ]
-                    ]
-                );
-            } else {
-                $House = Houses::findFirst(
-                    [
-                        'columns'    => '*',
-                        'conditions' => 'street = ?1 AND number = ?2 AND addition = ?3 AND zipCode = ?4',
-                        'bind'       => [
-                            1 => $street,
-                            2 => $number,
-                            3 => $addition,
-                            4 => $zipCode,
-                        ]
-                    ]
-                );
-            }
+            $user = $this->Auth();
 
-            $Room = Rooms::find(
-                [
-                    'columns'    => '*',
-                    'conditions' => 'houseID = ?1',
-                    'bind'       => [
-                        1 => $House->id,
-                    ]
-                ]
-            );
+            if ($user == null) {
+                // Set status code
+                $response->setStatusCode(400, 'Bad Request');
 
-            $RoomToDelete = new Rooms();
-            $count = 1;
-            foreach ($Room as $x){
-                if($count == $roomOrder){
-                    $RoomToDelete = $x;
+                // Set the content of the response
+                $response->setJsonContent(["status" => false, "error" => "Cannot get data from database please check credentials"]);
+            } else if (true) {
+
+                $street =  $this->request->getPut("street");
+                $number =  $this->request->getPut("number");
+                $addition =  $this->request->getPut("addition");
+                $zipCode =  $this->request->getPut("zipCode");
+                $roomOrder = $this->request->getPut("roomOrder");
+                if ($this->request->getPut("addition") == null){
+                    $House = Houses::findFirst(
+                        [
+                            'columns'    => '*',
+                            'conditions' => 'street = ?1 AND number = ?2 AND zipCode = ?4',
+                            'bind'       => [
+                                1 => $street,
+                                2 => $number,
+                                4 => $zipCode,
+                            ]
+                        ]
+                    );
+                } else {
+                    $House = Houses::findFirst(
+                        [
+                            'columns'    => '*',
+                            'conditions' => 'street = ?1 AND number = ?2 AND addition = ?3 AND zipCode = ?4',
+                            'bind'       => [
+                                1 => $street,
+                                2 => $number,
+                                3 => $addition,
+                                4 => $zipCode,
+                            ]
+                        ]
+                    );
                 }
-                $count++;
+
+                if($House->userID == $user['userID'] || $user['roleID'] == 2){
+                    $Room = Rooms::find(
+                        [
+                            'columns'    => '*',
+                            'conditions' => 'houseID = ?1',
+                            'bind'       => [
+                                1 => $House->id,
+                            ]
+                        ]
+                    );
+
+                    $RoomToDelete = new Rooms();
+                    $count = 1;
+                    foreach ($Room as $x){
+                        if($count == $roomOrder){
+                            $RoomToDelete = $x;
+                        }
+                        $count++;
+                    }
+                    $RoomToDelete->delete();
+                    // Set status code
+                    $response->setStatusCode(200, 'OK');
+
+                    // Set the content of the response
+                    $response->setJsonContent([$Room]);
+                } else {
+                    // Set status code
+                    $response->setStatusCode(401, 'OK');
+
+                    // Set the content of the response
+                    $response->setJsonContent('This is not your house');
+                }
             }
-            //$RoomToDelete->delete();
 
-            // Set status code
-            $response->setStatusCode(200, 'OK');
-
-            // Set the content of the response
-            $response->setJsonContent([$Room]);
         } else {
             // Set status code
             $response->setStatusCode(400, 'Bad Request');
@@ -272,7 +302,6 @@ class APIController extends \Phalcon\Mvc\Controller
         $request = new Request();
 
         if ($request->isGet()) {
-            $returnData = array();
             $search =  $this->request->getPut("search");
             $BedCount =  $this->request->getPut("minimalBedroomCount");
             $ToiletCount =  $this->request->getPut("minimalToiletCount");

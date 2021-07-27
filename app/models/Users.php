@@ -126,6 +126,7 @@ class Users extends \Phalcon\Mvc\Model
     {
         $this->setSchema("sql11426251");
         $this->setSource("users");
+        $this->hasMany('id', 'Houses', 'userID', ['alias' => 'Houses']);
         $this->belongsTo('roleID', '\UserRole', 'id', ['alias' => 'Userrole']);
     }
 

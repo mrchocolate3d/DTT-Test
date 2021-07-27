@@ -40,6 +40,12 @@ class Houses extends \Phalcon\Mvc\Model
     protected $city;
 
     /**
+     *
+     * @var integer
+     */
+    protected $userID;
+
+    /**
      * Method to set the value of field id
      *
      * @param integer $id
@@ -118,6 +124,19 @@ class Houses extends \Phalcon\Mvc\Model
     }
 
     /**
+     * Method to set the value of field userID
+     *
+     * @param integer $userID
+     * @return $this
+     */
+    public function setUserID($userID)
+    {
+        $this->userID = $userID;
+
+        return $this;
+    }
+
+    /**
      * Returns the value of field id
      *
      * @return integer
@@ -178,6 +197,16 @@ class Houses extends \Phalcon\Mvc\Model
     }
 
     /**
+     * Returns the value of field userID
+     *
+     * @return integer
+     */
+    public function getUserID()
+    {
+        return $this->userID;
+    }
+
+    /**
      * Initialize method for model.
      */
     public function initialize()
@@ -185,6 +214,7 @@ class Houses extends \Phalcon\Mvc\Model
         $this->setSchema("sql11426251");
         $this->setSource("houses");
         $this->hasMany('id', 'Rooms', 'houseID', ['alias' => 'Rooms']);
+        $this->belongsTo('userID', '\Users', 'id', ['alias' => 'Users']);
     }
 
     /**
@@ -223,7 +253,8 @@ class Houses extends \Phalcon\Mvc\Model
             'number' => 'number',
             'addition' => 'addition',
             'zipCode' => 'zipCode',
-            'city' => 'city'
+            'city' => 'city',
+            'userID' => 'userID'
         ];
     }
 
