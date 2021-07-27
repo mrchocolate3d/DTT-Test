@@ -29,9 +29,9 @@ class Rooms extends \Phalcon\Mvc\Model
 
     /**
      *
-     * @var integer
+     * @var string
      */
-    protected $typeID;
+    protected $type;
 
     /**
      *
@@ -92,14 +92,14 @@ class Rooms extends \Phalcon\Mvc\Model
     }
 
     /**
-     * Method to set the value of field typeID
+     * Method to set the value of field type
      *
-     * @param integer $typeID
+     * @param string $type
      * @return $this
      */
-    public function setTypeID($typeID)
+    public function setType($type)
     {
-        $this->typeID = $typeID;
+        $this->type = $type;
 
         return $this;
     }
@@ -158,13 +158,13 @@ class Rooms extends \Phalcon\Mvc\Model
     }
 
     /**
-     * Returns the value of field typeID
+     * Returns the value of field type
      *
-     * @return integer
+     * @return string
      */
-    public function getTypeID()
+    public function getType()
     {
-        return $this->typeID;
+        return $this->type;
     }
 
     /**
@@ -184,7 +184,7 @@ class Rooms extends \Phalcon\Mvc\Model
     {
         $this->setSchema("sql11426251");
         $this->setSource("rooms");
-        $this->belongsTo('typeID', '\RoomType', 'id', ['alias' => 'Roomtype']);
+        $this->belongsTo('type', '\RoomType', 'type', ['alias' => 'Roomtype']);
         $this->belongsTo('houseID', '\Houses', 'id', ['alias' => 'Houses']);
     }
 
@@ -223,7 +223,7 @@ class Rooms extends \Phalcon\Mvc\Model
             'width' => 'width',
             'length' => 'length',
             'height' => 'height',
-            'typeID' => 'typeID',
+            'type' => 'type',
             'houseID' => 'houseID'
         ];
     }

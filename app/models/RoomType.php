@@ -5,28 +5,9 @@ class RoomType extends \Phalcon\Mvc\Model
 
     /**
      *
-     * @var integer
-     */
-    protected $id;
-
-    /**
-     *
      * @var string
      */
     protected $type;
-
-    /**
-     * Method to set the value of field id
-     *
-     * @param integer $id
-     * @return $this
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
-    }
 
     /**
      * Method to set the value of field type
@@ -39,16 +20,6 @@ class RoomType extends \Phalcon\Mvc\Model
         $this->type = $type;
 
         return $this;
-    }
-
-    /**
-     * Returns the value of field id
-     *
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->id;
     }
 
     /**
@@ -68,7 +39,7 @@ class RoomType extends \Phalcon\Mvc\Model
     {
         $this->setSchema("sql11426251");
         $this->setSource("roomType");
-        $this->hasMany('id', 'Rooms', 'typeID', ['alias' => 'Rooms']);
+        $this->hasMany('type', 'Rooms', 'type', ['alias' => 'Rooms']);
     }
 
     /**
@@ -102,7 +73,6 @@ class RoomType extends \Phalcon\Mvc\Model
     public function columnMap()
     {
         return [
-            'id' => 'id',
             'type' => 'type'
         ];
     }
