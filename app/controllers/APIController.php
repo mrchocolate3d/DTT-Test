@@ -45,7 +45,8 @@ class APIController extends \Phalcon\Mvc\Controller
      * Simple GET API Request
      *
      * @method GET
-     * @link /apis/get
+     * @method UPDATE
+     * @link /DTT/api/getHouses
      */
     public function getHousesAction()
     {
@@ -105,7 +106,6 @@ class APIController extends \Phalcon\Mvc\Controller
             $response->setStatusCode(405, 'Method Not Allowed');
 
             // Set the content of the response
-            // $response->setContent("Sorry, the page doesn't exist");
             $response->setJsonContent(["status" => false, "error" => "Method Not Allowed"]);
         }
 
@@ -116,7 +116,7 @@ class APIController extends \Phalcon\Mvc\Controller
 
     /**
      * @method POST
-     * @link /apis/house
+     * @link /DTT/api/house
      */
     public function houseAction()
     {
@@ -125,7 +125,6 @@ class APIController extends \Phalcon\Mvc\Controller
 
         $response = new Response();
 
-        // Getting a request instance
         $request = new Request();
 
         if ($request->isPost()) {
@@ -206,40 +205,31 @@ class APIController extends \Phalcon\Mvc\Controller
                 }
 
             }
-
             $response->setStatusCode(200, 'OK');
-
-
         } else {
-
-            // Set status code
             $response->setStatusCode(400, 'Bad Request');
-
-            // Set the content of the response
             $response->setJsonContent(["status" => false, "error" => "Invalid Email and Password."]);
         }
         $response->send();
     }
 
+
+
+    /**
+     * @method DELETE
+     * @link /DTT/api/house
+     */
     public function deleteRoomAction(){
 
-        // Disable View File Content
         $this->view->disable();
-
-        // Getting a response instance
         $response = new Response();
-
-        // Getting a request instance
         $request = new Request();
 
         if ($request->isDelete()) {
             $user = $this->Auth();
 
             if ($user == null) {
-                // Set status code
                 $response->setStatusCode(400, 'Bad Request');
-
-                // Set the content of the response
                 $response->setJsonContent(["status" => false, "error" => "Cannot get data from database please check credentials"]);
             } else if (true) {
 
@@ -296,53 +286,42 @@ class APIController extends \Phalcon\Mvc\Controller
                             $count++;
                         }
                         $RoomToDelete->delete();
-                        // Set status code
                         $response->setStatusCode(200, 'OK');
-
-                        // Set the content of the response
                         $response->setJsonContent('Room has been deleted successfully');
                     }
                 } else if ($roomOrder == 0) {
                     $House->delete();
-                    // Set status code
                     $response->setStatusCode(200, 'OK');
-
-                    // Set the content of the response
                     $response->setJsonContent('House has been removed from listing');
                 } else {
-                    // Set status code
                     $response->setStatusCode(401, 'OK');
-
-                    // Set the content of the response
                     $response->setJsonContent('House was not deleted from the database please contact an administrator');
                 }
             }
         } else {
-            // Set status code
             $response->setStatusCode(400, 'Bad Request');
-
-            // Set the content of the response
             $response->setJsonContent(["status" => false, "error" => "Cannot get data from database"]);
         }
-
         $response->send();
     }
 
+
+    /**
+     * @method GET
+     * @link /DTT/api/filterHouses
+     */
     public function filterHousesAction(){
 
-        // Disable View File Content
         $this->view->disable();
-
-        // Getting a response instance
         $response = new Response();
-
-        // Getting a request instance
         $request = new Request();
 
         if ($request->isGet()) {
             $search =  $this->request->getPut("search");
             $BedCount =  $this->request->getPut("minimalBedroomCount");
             $ToiletCount =  $this->request->getPut("minimalToiletCount");
+
+            //Check the filter properties
             if($BedCount !== null && $ToiletCount == null && $search == null){
                 $results = $this->db->fetchAll(
                     "select houseID,type, count(type) as c FROM rooms where type = 'bedroom' GROUP BY houseID, type HAVING count(type) >='$BedCount'"
@@ -362,24 +341,16 @@ class APIController extends \Phalcon\Mvc\Controller
                 $returnData = 'All values are null enter a filter';
             }
 
-            // Set status code
             $response->setStatusCode(200, 'OK');
-
-            // Set the content of the response
             $response->setJsonContent($returnData);
 
         }  else {
-
-            // Set status code
             $response->setStatusCode(400, 'Bad Request');
-
-            // Set the content of the response
             $response->setJsonContent(["status" => false, "error" => "Cannot get data from database"]);
         }
         $response->send();
 
     }
-
 
     public function getHousesFromFilter($results): array
     {
