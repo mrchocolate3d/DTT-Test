@@ -116,7 +116,7 @@ class APIController extends \Phalcon\Mvc\Controller
 
     /**
      * @method POST
-     * @link /apis/get
+     * @link /apis/house
      */
     public function houseAction()
     {
@@ -139,39 +139,72 @@ class APIController extends \Phalcon\Mvc\Controller
                 $response->setJsonContent(["status" => false, "error" => "Cannot get data from database please check credentials"]);
             } else if (true) {
                 $house = new Houses();
-
+                $id =  $this->request->getPut("id");
                 $house->street =  $this->request->getPut("street");
                 $house->number =  $this->request->getPut("number");
                 $house->addition =  $this->request->getPut("addition");
                 $house->zipCode =  $this->request->getPut("zipCode");
                 $house->city =  $this->request->getPut("city");
                 $house->userID =  $user['userID'];
-                $house->save();
                 $rooms = $this->request->getPut("rooms");
 
                 $RoomHouse = Houses::findFirst(
                     [
                         'columns'    => '*',
-                        'conditions' => 'street = ?1 AND number = ?2',
+                        'conditions' => 'id = ?1',
                         'bind'       => [
-                            1 => $house->street,
-                            2 => $house->number,
+                            1 => $id,
                         ]
                     ]
                 );
 
-                foreach ($rooms as $room){
-                    $roomDB = new Rooms();
-                    $roomDB->width = $room['width'];
-                    $roomDB->length = $room['length'];
-                    $roomDB->height = $room['height'];
-                    $roomDB->type = $room['type'];
-                    $roomDB->houseID = $RoomHouse->id;
-                    $roomDB->save();
-
+                if ($RoomHouse){
+                    $RoomHouse->street = $house->street;
+                    $RoomHouse->number = $house->number;
+                    $RoomHouse->addition = $house->addition;
+                    $RoomHouse->zipCode = $house->zipCode;
+                    $RoomHouse->city = $house->city;
+                    $RoomHouse->userID = $house->userID;
+                    $RoomHouse->update();
+                } else {
+                    $house->save();
                 }
-                // Set the content of the response
-                $response->setJsonContent(["Status" => "Success", "House" => $house, "Rooms" => $rooms ]);
+
+                $Room = Rooms::find(
+                    [
+                        'columns'    => '*',
+                        'conditions' => 'houseID = ?1 ',
+                        'bind'       => [
+                            1 => $RoomHouse->id,
+                        ]
+                    ]
+                );
+
+                if ($Room){
+                    $count = 0;
+                    foreach ($Room as $room){
+                        $room->width = $rooms[$count]['width'];
+                        $room->length = $rooms[$count]['length'];
+                        $room->height = $rooms[$count]['height'];
+                        $room->type = $rooms[$count]['type'];
+                        $count++;
+                        $room->update();
+                    }
+                    $response->setJsonContent(["Status" => "Updated", "House" => $RoomHouse, "Rooms" => $Room ]);
+
+                } else {
+                    foreach ($rooms as $room) {
+                        $roomDB = new Rooms();
+                        $roomDB->width = $room['width'];
+                        $roomDB->length = $room['length'];
+                        $roomDB->height = $room['height'];
+                        $roomDB->type = $room['type'];
+                        $roomDB->houseID = $RoomHouse->id;
+                        //$roomDB->save();
+                        $response->setJsonContent(["Status" => "Success", "House" => $house, "Rooms" => $rooms ]);
+                    }
+                }
+
             }
 
             $response->setStatusCode(200, 'OK');
@@ -346,6 +379,7 @@ class APIController extends \Phalcon\Mvc\Controller
         $response->send();
 
     }
+
 
     public function getHousesFromFilter($results): array
     {
