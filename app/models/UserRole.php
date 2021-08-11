@@ -66,7 +66,7 @@ class UserRole extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
-        $this->setSchema("sql11426251");
+        $this->setSchema("EgFtyzVzTW");
         $this->setSource("userRole");
         $this->hasMany('id', 'Users', 'roleID', ['alias' => 'Users']);
     }

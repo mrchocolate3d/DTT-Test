@@ -182,7 +182,7 @@ class Rooms extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
-        $this->setSchema("sql11426251");
+        $this->setSchema("EgFtyzVzTW");
         $this->setSource("rooms");
         $this->belongsTo('type', '\RoomType', 'type', ['alias' => 'Roomtype']);
         $this->belongsTo('houseID', '\Houses', 'id', ['alias' => 'Houses']);

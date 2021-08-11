@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://sql11.freesqldatabase.com:3306/sql11426251</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="EgFtyzVzTW@remotemysql.com" uuid="3954903c-9a63-4388-a258-5bab853bf2eb">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://remotemysql.com:3306/EgFtyzVzTW</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

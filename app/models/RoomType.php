@@ -37,7 +37,7 @@ class RoomType extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
-        $this->setSchema("sql11426251");
+        $this->setSchema("EgFtyzVzTW");
         $this->setSource("roomType");
         $this->hasMany('type', 'Rooms', 'type', ['alias' => 'Rooms']);
     }

@@ -211,7 +211,7 @@ class Houses extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
-        $this->setSchema("sql11426251");
+        $this->setSchema("EgFtyzVzTW");
         $this->setSource("houses");
         $this->hasMany('id', 'Rooms', 'houseID', ['alias' => 'Rooms']);
         $this->belongsTo('userID', '\Users', 'id', ['alias' => 'Users']);
